@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://db:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}"
+      SPRING_DATASOURCE_USERNAME: "${POSTGRESQL_USERNAME}"
+      SPRING_DATASOURCE_PASSWORD: "${POSTGRESQL_PASSWORD}"
+      SERVER_PORT: "${SERVER_PORT}"
+      APPLICATION_NAME: "${APPLICATION_NAME}"
+      APPLICATION_VERSION: "${APPLICATION_VERSION}"
+    depends_on:
+      - db
+    volumes:
+      - maven-repo:/root/.m2
+
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=${POSTGRESQL_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD}
+      - POSTGRES_DB=${POSTGRESQL_DATABASE}
+    ports:
+      - "${POSTGRESQL_PORT}:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    command: ["postgres", "-p", "${POSTGRESQL_PORT}"]
+
+volumes:
+  db_data:
+  maven-repo:
